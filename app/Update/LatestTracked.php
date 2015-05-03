@@ -99,16 +99,6 @@ class LatestTracked extends BaseUpdate
 				\DB::raw('count(user_list_profile.id) as total'),
 			]);
 
-		$profileIds = [];
-		foreach($userListProfiles as $userListProfile)
-		{
-			$profileIds[] = $userListProfile->id;
-		}
-
-		$all = UserListProfile::whereIn('profile_id', $profileIds)
-			->orderBy('id', 'desc')
-			->get();
-
 		$return = [];
 
 		foreach($userListProfiles as $userListProfile)
@@ -139,7 +129,7 @@ class LatestTracked extends BaseUpdate
 		$return = $multiProfile->run();
 
 		$this->updateCache($return);
-		
+
 		return $return;
 	}
 }
