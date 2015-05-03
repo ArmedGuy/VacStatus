@@ -54,6 +54,7 @@ class MultiProfile
 	protected function updateCache($smallId, $data)
 	{
 		unset($data['times_checked']);
+		unset($data['times_added']);
 		unset($data['login_check']);
 		unset($data['profile_description']);
 
@@ -78,7 +79,7 @@ class MultiProfile
 
 			$refreshProfiles[] = [
 				'profile_key' => $k,
-				'profile' => $profile 
+				'profile' => $profile
 			];
 		}
 
@@ -117,7 +118,7 @@ class MultiProfile
 
 		$steamBans = $steamBans->players;
 
-		// whereIn('profile.small_id', $getSmallId)->	
+		// whereIn('profile.small_id', $getSmallId)->
 		$profiles = Profile::whereIn('profile.small_id', $getSmallId)
 			->groupBy('profile.id')
 			->leftjoin('profile_ban', 'profile_ban.profile_id', '=', 'profile.id')
@@ -148,13 +149,6 @@ class MultiProfile
 				\DB::raw('count(user_list_profile.id) as total')
 			]);
 
-		$profileIds = [];
-
-		foreach($getSmallId as $small_id)
-		{
-			$profileIds[] = $profiles->where('small_id', $small_id)->first();
-		}
-
 		$indexSave = [];
 
 		foreach($steamInfos as $k => $info)
@@ -180,13 +174,13 @@ class MultiProfile
 
 			$steamInfo = $steamInfos[$keys['steamInfos']];
 			$steamBan = $steamBans[$keys['steamBans']];
-			
+
 			$profile = $profiles->where('small_id', $smallId)->first();
 
 			if(is_null($profile))
 			{
 				$profile = Profile::whereSmallId($smallId)->first();
-				
+
 				if(!isset($profile->id))
 				{
 					$profile = new Profile;
@@ -233,7 +227,7 @@ class MultiProfile
 					$profileBan->unban = true;
 				}
 			}
-			
+
 			$profileBan->vac = $combinedBan;
 			$profileBan->community = $steamBan->CommunityBanned;
 			$profileBan->trade = $steamBan->EconomyBan != 'none';
@@ -344,7 +338,7 @@ class MultiProfile
 				'profile_old_alias'	=> $oldAliasArray,
 				'times_checked'		=> $currentProfileCheck,
 				'times_added'		=> [
-					'number' => $profile->total?:0,
+					'number' => $profile->total,
 					'time' => (new DateTime($profile->last_added_created_at))->format("M j Y")
 				],
 			];
